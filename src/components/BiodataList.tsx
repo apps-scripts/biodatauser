@@ -28,10 +28,8 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
     const path = 'biodata';
     
     // In Simulation Mode, we allow access even if auth is still initializing
-    const baseQuery = role === UserRole.ADMIN && auth.currentUser
-      ? query(collection(db, path), orderBy('createdAt', 'desc'))
-      : query(collection(db, path), orderBy('createdAt', 'desc')); 
-    // Note: removed where clause for public simulation mode to ensure it works on Vercel
+    // Using a simpler query for debugging Vercel Authorized Domains issue
+    const baseQuery = query(collection(db, path), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(baseQuery, (snapshot) => {
       const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Biodata));

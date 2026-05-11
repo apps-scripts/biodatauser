@@ -73,8 +73,8 @@ export default function BiodataForm({ editingBiodata, onCancelEdit, onSuccess }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser) return;
-
+    
+    // Check for documents
     if (!formData.fotoKtpUrl || !formData.fotoNpwpUrl) {
       alert('Mohon lengkapi Dokumen Pendukung (Foto KTP & NPWP)!');
       return;
@@ -83,6 +83,8 @@ export default function BiodataForm({ editingBiodata, onCancelEdit, onSuccess }:
     setLoading(true);
     try {
       const path = 'biodata';
+      const currentUser = auth.currentUser;
+
       if (editingBiodata?.id) {
         await updateDoc(doc(db, path, editingBiodata.id), {
           ...formData,
@@ -91,7 +93,7 @@ export default function BiodataForm({ editingBiodata, onCancelEdit, onSuccess }:
       } else {
         await addDoc(collection(db, path), {
           ...formData,
-          userId: auth.currentUser.uid,
+          userId: currentUser ? currentUser.uid : 'simulation-guest-id',
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
