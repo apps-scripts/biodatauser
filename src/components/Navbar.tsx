@@ -78,58 +78,56 @@ export default function Navbar({ role, effectiveRole, setEffectiveRole, displayN
             <Database size={20} />
           </div>
           <span className="text-xl font-bold text-blue-900 tracking-tight">E-BIODATA</span>
-          {role === UserRole.ADMIN && (
-            <div className="relative">
-              <button 
-                onClick={toggleRole}
-                className={`ml-3 px-3 py-1.5 text-[11px] font-extrabold rounded-lg uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-sm ${
-                  effectiveRole === UserRole.ADMIN 
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-200' 
-                  : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'
-                }`}
-              >
-                <ArrowLeftRight size={15} />
-                {effectiveRole === UserRole.ADMIN ? 'Mode Admin' : 'Mode User (Simulasi)'}
-              </button>
+          <div className="relative">
+            <button 
+              onClick={toggleRole}
+              className={`ml-3 px-3 py-1.5 text-[11px] font-extrabold rounded-lg uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-sm ${
+                effectiveRole === UserRole.ADMIN 
+                ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-200' 
+                : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'
+              }`}
+            >
+              <ArrowLeftRight size={15} />
+              {effectiveRole === UserRole.ADMIN ? 'Mode Admin' : 'Mode User (Simulasi)'}
+            </button>
 
-              {showPasswordInput && (
-                <div className="absolute top-full left-2 mt-2 p-4 bg-white border border-gray-200 shadow-2xl rounded-2xl z-50 w-72 animate-in fade-in slide-in-from-top-2 border-t-4 border-t-red-500">
-                  <p className="text-[11px] font-extrabold text-gray-400 uppercase mb-3 tracking-widest flex items-center gap-2">
-                    <ShieldCheck size={14} className="text-red-500" />
-                    Verifikasi Admin
-                  </p>
-                  <form onSubmit={verifyAndSwitch} className="space-y-2">
-                    <input 
-                      autoFocus
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Password..."
-                      className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                        passError ? 'border-red-500 bg-red-50 animate-shake' : 'border-gray-200'
-                      }`}
-                    />
-                    <div className="flex gap-2">
-                      <button 
-                        type="submit"
-                        className="flex-1 bg-blue-600 text-white text-[11px] font-extrabold py-2.5 rounded-xl hover:bg-blue-700 transition-all active:scale-95 uppercase tracking-widest shadow-md shadow-blue-200"
-                      >
-                        Verifikasi
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => { setShowPasswordInput(false); setPassword(''); }}
-                        className="px-4 bg-gray-100 text-gray-500 text-[11px] font-extrabold py-2.5 rounded-xl hover:bg-gray-200 transition-all active:scale-95 uppercase tracking-widest"
-                      >
-                        Batal
-                      </button>
-                    </div>
-                    {passError && <p className="text-[10px] text-red-500 font-bold">Password Salah!</p>}
-                  </form>
-                </div>
-              )}
-            </div>
-          )}
+            {showPasswordInput && (
+              <div className="absolute top-full left-2 mt-2 p-4 bg-white border border-gray-200 shadow-2xl rounded-2xl z-50 w-72 animate-in fade-in slide-in-from-top-2 border-t-4 border-t-red-500">
+                <p className="text-[11px] font-extrabold text-gray-400 uppercase mb-3 tracking-widest flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-red-500" />
+                  Verifikasi Admin
+                </p>
+                <form onSubmit={verifyAndSwitch} className="space-y-2">
+                  <input 
+                    autoFocus
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password..."
+                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                      passError ? 'border-red-500 bg-red-50 animate-shake' : 'border-gray-200'
+                    }`}
+                  />
+                  <div className="flex gap-2">
+                    <button 
+                      type="submit"
+                      className="flex-1 bg-blue-600 text-white text-[11px] font-extrabold py-2.5 rounded-xl hover:bg-blue-700 transition-all active:scale-95 uppercase tracking-widest shadow-md shadow-blue-200"
+                    >
+                      Verifikasi
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => { setShowPasswordInput(false); setPassword(''); }}
+                      className="px-4 bg-gray-100 text-gray-500 text-[11px] font-extrabold py-2.5 rounded-xl hover:bg-gray-200 transition-all active:scale-95 uppercase tracking-widest"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                  {passError && <p className="text-[10px] text-red-500 font-bold">Password Salah!</p>}
+                </form>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
