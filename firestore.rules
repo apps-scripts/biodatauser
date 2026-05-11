@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'bppkkpdppik@gmail.com'.lower() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Admin collection
+    match /admins/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isOwner(userId) && (
+        (request.auth.token.email == 'bppkkpdppik@gmail.com' && request.resource.data.role == 'admin') ||
+        (request.auth.token.email != 'bppkkpdppik@gmail.com' && request.resource.data.role == 'user')
+      );
+      allow update: if isAdmin(); // Only admins can change roles
+    }
+
+    // Biodata records
+    match /biodata/{biodataId} {
+      function isValidBiodata(data) {
+        return data.namaLengkap is string && data.namaLengkap.size() > 0 &&
+               data.nik is string && data.nik.size() >= 0 &&
+               data.userId == request.auth.uid;
+      }
+
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidBiodata(request.resource.data);
+      allow update: if isSignedIn() && (isAdmin() || (isOwner(resource.data.userId) && isValidBiodata(request.resource.data)));
+      allow delete: if isSignedIn() && (isAdmin() || (resource != null && resource.data.userId == request.auth.uid));
+    }
+    // System configuration
+    match /system/{configId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

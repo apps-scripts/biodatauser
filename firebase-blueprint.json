@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information including roles",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    },
+    "Biodata": {
+      "title": "Biodata Document",
+      "description": "Comprehensive biodata form data",
+      "type": "object",
+      "properties": {
+        "namaLengkap": { "type": "string" },
+        "nip": { "type": "string" },
+        "pangkatGolongan": { "type": "string" },
+        "jabatan": { "type": "string" },
+        "nik": { "type": "string" },
+        "npwp": { "type": "string" },
+        "instansi": { "type": "string" },
+        "alamatKantor": { "type": "string" },
+        "pendidikan": { "type": "string" },
+        "telpWa": { "type": "string" },
+        "namaBank": { "type": "string" },
+        "nomorRekening": { "type": "string" },
+        "fotoKtpUrl": { "type": "string" },
+        "fotoNpwpUrl": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["namaLengkap", "nik", "npwp", "instansi", "userId"]
+    },
+    "SystemConfig": {
+      "title": "System Configuration",
+      "description": "Global settings for the application",
+      "type": "object",
+      "properties": {
+        "simulationPassword": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User settings and roles"
+    },
+    "biodata/{biodataId}": {
+      "schema": "Biodata",
+      "description": "Stored biodata records"
+    },
+    "system/config": {
+      "schema": "SystemConfig",
+      "description": "Global application settings"
+    }
+  }
+}
