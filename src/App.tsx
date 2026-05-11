@@ -18,12 +18,16 @@ export default function App() {
   const [editingBiodata, setEditingBiodata] = useState<Biodata | null>(null);
 
   useEffect(() => {
+    // Failsafe: Pastikan sistem tetap terbuka jika koneksi auth tertunda di Vercel
+    const failsafe = setTimeout(() => {
+      setLoading(false);
+      if (!effectiveRole) setEffectiveRole(UserRole.USER);
+    }, 3000);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
-        // Auto-login anonymously to skip login screen
         signInAnonymously(auth).catch((err) => {
           console.error("Anonymous Sign-In Error:", err);
-          // Fallback settings if auth fails
           setEffectiveRole(UserRole.USER);
           setLoading(false);
         });
@@ -31,7 +35,7 @@ export default function App() {
       }
 
       setUser(firebaseUser);
-      setLoading(true); // Ensure loading state while checking profile
+      setLoading(true);
       
       try {
         const profileRef = doc(db, 'users', firebaseUser.uid);
@@ -43,7 +47,6 @@ export default function App() {
           currentRole = data.role as UserRole;
           setProfile({ uid: firebaseUser.uid, ...data } as UserProfile);
         } else {
-          // If the email matches the owner email, set as admin
           const isAdminUser = firebaseUser.email === 'bppkkpdppik@gmail.com';
           currentRole = isAdminUser ? UserRole.ADMIN : UserRole.USER;
           
@@ -54,23 +57,22 @@ export default function App() {
             createdAt: serverTimestamp(),
           };
           
-          // Don't await profile creation to avoid blocking UI if rules fail
-          setDoc(profileRef, newProfile).catch(e => console.warn("Failed to save profile:", e));
+          await setDoc(profileRef, newProfile).catch(() => {});
 
           if (isAdminUser) {
-            setDoc(doc(db, 'admins', firebaseUser.uid), {
+            await setDoc(doc(db, 'admins', firebaseUser.uid), {
               email: firebaseUser.email,
               assignedAt: serverTimestamp()
-            }).catch(e => console.warn("Failed to save admin list:", e));
+            }).catch(() => {});
           }
 
           setProfile({ uid: firebaseUser.uid, ...newProfile } as UserProfile);
         }
         
-        // Final state setup
+        // Always allow guest access but identify if they are an admin
         setEffectiveRole(UserRole.USER);
       } catch (err) {
-        console.error("Profile Fetch Error:", err);
+        console.error("Auth Error:", err);
         setEffectiveRole(UserRole.USER);
       } finally {
         setLoading(false);
@@ -152,7 +154,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex justify-between items-center text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">
           <span>&copy; 2026 E-Biodata Pro System</span>
           <span className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full" /> System Online (Guest Mode Active)
+            <span className={`w-2 h-2 rounded-full ${user?.isAnonymous === false ? 'bg-blue-500' : 'bg-green-500'}`} /> 
+            System Online {user?.isAnonymous === false ? '(Authenticated)' : '(Guest Mode)'}
           </span>
         </div>
       </footer>

@@ -38,26 +38,14 @@ service cloud.firestore {
 
     // User profiles
     match /users/{userId} {
-      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
-      allow list: if isAdmin();
-      allow create: if isSignedIn() && isOwner(userId) && (
-        (request.auth.token.email == 'bppkkpdppik@gmail.com' && request.resource.data.role == 'admin') ||
-        (request.auth.token.email != 'bppkkpdppik@gmail.com' && request.resource.data.role == 'user')
-      );
-      allow update: if isAdmin(); // Only admins can change roles
+      allow read, write: if true;
     }
 
     // Biodata records
     match /biodata/{biodataId} {
-      function isValidBiodata(data) {
-        return data.namaLengkap is string && data.namaLengkap.size() > 0 &&
-               data.nik is string && data.nik.size() >= 0 &&
-               data.userId == request.auth.uid;
-      }
-
-      allow read, list, create: if true;
-      allow update, delete: if isSignedIn() || isAdmin(); 
+      allow read, write: if true;
     }
+
     // System configuration
     match /system/{configId} {
       allow read, write: if true;

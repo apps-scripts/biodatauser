@@ -126,8 +126,14 @@ export default function BiodataForm({ editingBiodata, onCancelEdit, onSuccess }:
           onSuccess();
         }
       }, 1000);
-    } catch (error) {
-      handleFirestoreError(error, editingBiodata ? OperationType.UPDATE : OperationType.CREATE, 'biodata');
+    } catch (error: any) {
+      console.error('Save Biodata Error:', error);
+      alert('Gagal menyimpan data ke database. Error: ' + (error.message || error));
+      try {
+        handleFirestoreError(error, editingBiodata ? OperationType.UPDATE : OperationType.CREATE, 'biodata');
+      } catch (e) {
+        // Log is enough
+      }
     } finally {
       setLoading(false);
     }
@@ -136,9 +142,45 @@ export default function BiodataForm({ editingBiodata, onCancelEdit, onSuccess }:
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'fotoKtpUrl' | 'fotoNpwpUrl') => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (over 2MB before compression we might want to warn)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File terlalu besar! Maksimal 5MB sebelum kompresi.');
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, [field]: reader.result as string }));
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Compress using canvas
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Limit max dimensions to 800px to keep base64 string small
+          const MAX_DIM = 800;
+          if (width > height) {
+            if (width > MAX_DIM) {
+              height *= MAX_DIM / width;
+              width = MAX_DIM;
+            }
+          } else {
+            if (height > MAX_DIM) {
+              width *= MAX_DIM / height;
+              height = MAX_DIM;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Quality 0.6 to keep size around 50-100KB per image
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+          setFormData(prev => ({ ...prev, [field]: compressedDataUrl }));
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }

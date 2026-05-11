@@ -100,13 +100,55 @@ export default function SettingsPage({ profile }: SettingsPageProps) {
     }
   };
 
+  const checkFirebaseConnection = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      // Test read
+      const testRef = doc(db, 'system', 'config');
+      await getDoc(testRef);
+      
+      // Test write
+      await setDoc(doc(db, 'system', 'connection_test'), {
+        lastTested: serverTimestamp(),
+        domain: window.location.hostname
+      }, { merge: true });
+      
+      setMessage({ type: 'success', text: 'Koneksi Firebase Berhasil! Database dapat diakses untuk baca & tulis.' });
+    } catch (err: any) {
+      console.error('Firebase Connection Test Failed:', err);
+      let errorMsg = 'Koneksi Gagal: ' + (err.message || 'Error tidak diketahui');
+      if (err.code === 'permission-denied') {
+        errorMsg = 'Koneksi Gagal: Izin ditolak (Permission Denied). Periksa firestore.rules.';
+      } else if (err.code === 'failed-precondition') {
+        errorMsg = 'Koneksi Gagal: Indexing atau precondition gagal.';
+      } else if (err.message?.includes('network')) {
+        errorMsg = 'Koneksi Gagal: Masalah jaringan. Mungkin domain belum di-whitelist di Authorized Domains.';
+      }
+      setMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="bg-gray-900 p-2 rounded-lg text-white">
-          <SettingsIcon size={20} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-gray-900 p-2 rounded-lg text-white">
+            <SettingsIcon size={20} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Pengaturan Sistem</h2>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Pengaturan Sistem</h2>
+        
+        <button 
+          onClick={checkFirebaseConnection}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-slate-200 transition-all disabled:opacity-50 border border-slate-200"
+        >
+          <RefreshCcw size={14} className={loading ? 'animate-spin' : ''} />
+          Tes Koneksi Database
+        </button>
       </div>
 
       {message && (

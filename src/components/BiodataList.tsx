@@ -27,8 +27,7 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
   useEffect(() => {
     const path = 'biodata';
     
-    // In Simulation Mode, we allow access even if auth is still initializing
-    // Using a simpler query for debugging Vercel Authorized Domains issue
+    // Simple query to show all data (Simulation/Public Mode)
     const baseQuery = query(collection(db, path), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(baseQuery, (snapshot) => {
@@ -38,7 +37,7 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
       setError(null);
     }, (error) => {
       console.error('Error fetching biodata:', error);
-      setError(error.message);
+      setError('Koneksi Gagal: ' + error.message);
       setLoading(false);
     });
 
