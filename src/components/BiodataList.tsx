@@ -17,6 +17,7 @@ interface BiodataListProps {
 export default function BiodataList({ role, onEdit }: BiodataListProps) {
   const [data, setData] = useState<Biodata[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,9 +25,14 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
-
     const path = 'biodata';
+    
+    if (!auth.currentUser) {
+      setLoading(false);
+      setError('Akses ditolak: Silakan klik ADMIN LOGIN terlebih dahulu untuk mengakses database.');
+      return;
+    }
+
     const baseQuery = role === UserRole.ADMIN 
       ? query(collection(db, path), orderBy('createdAt', 'desc'))
       : query(collection(db, path), where('userId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
@@ -35,8 +41,11 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
       const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Biodata));
       setData(records);
       setLoading(false);
+      setError(null);
     }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.error('Error fetching biodata:', error);
+      setError(error.message);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -462,7 +471,21 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Memuat data...</td>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <p className="text-sm text-gray-400 italic">Memuat data...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="p-4 bg-red-50 border border-red-100 rounded-xl max-w-md mx-auto">
+                      <p className="text-sm text-red-600 font-bold mb-1">Gagal Memuat Database</p>
+                      <p className="text-[10px] text-red-500 font-mono break-all">{error}</p>
+                    </div>
+                  </td>
                 </tr>
               ) : paginatedData.length === 0 ? (
                 <tr>
