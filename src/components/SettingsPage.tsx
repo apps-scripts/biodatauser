@@ -149,11 +149,6 @@ export default function SettingsPage({ profile }: SettingsPageProps) {
           </div>
 
           <div className="space-y-6">
-            {!profile?.role || profile.role !== 'admin' ? (
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-[11px] font-bold text-blue-700 uppercase tracking-widest leading-relaxed">
-                Perhatian: Anda sedang dalam mode simulasi. Untuk dapat mengubah password secara permanen di database, Anda harus Login menggunakan Akun Admin yang terdaftar (klik tombol ADMIN LOGIN di navbar).
-              </div>
-            ) : null}
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Simulation Password</label>

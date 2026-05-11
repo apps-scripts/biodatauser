@@ -19,21 +19,19 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      // Ensure we start at form when auth state changes for the first time
-      setView('form');
-      
       if (!firebaseUser) {
         // Auto-login anonymously to skip login screen
-        signInAnonymously(auth).catch(() => {
-          // If anonymous login fails (e.g. disabled in console), 
-          // we still allow the app to load but writes may fail until manual login
-          setLoading(false);
+        signInAnonymously(auth).catch((err) => {
+          console.error("Anonymous Sign-In Error:", err);
+          // Fallback settings if auth fails
           setEffectiveRole(UserRole.USER);
+          setLoading(false);
         });
         return;
       }
 
       setUser(firebaseUser);
+      setLoading(true); // Ensure loading state while checking profile
       
       try {
         const profileRef = doc(db, 'users', firebaseUser.uid);
@@ -45,41 +43,38 @@ export default function App() {
           currentRole = data.role as UserRole;
           setProfile({ uid: firebaseUser.uid, ...data } as UserProfile);
         } else {
-          const isAdmin = firebaseUser.email === 'bppkkpdppik@gmail.com';
-          currentRole = isAdmin ? UserRole.ADMIN : UserRole.USER;
+          // If the email matches the owner email, set as admin
+          const isAdminUser = firebaseUser.email === 'bppkkpdppik@gmail.com';
+          currentRole = isAdminUser ? UserRole.ADMIN : UserRole.USER;
           
           const newProfile = {
             email: firebaseUser.email || 'anonymous',
-            displayName: firebaseUser.displayName || (firebaseUser.isAnonymous ? 'Guest' : 'User'),
+            displayName: firebaseUser.displayName || (firebaseUser.isAnonymous ? 'Guest User' : 'User'),
             role: currentRole,
             createdAt: serverTimestamp(),
           };
-          await setDoc(profileRef, newProfile);
+          
+          // Don't await profile creation to avoid blocking UI if rules fail
+          setDoc(profileRef, newProfile).catch(e => console.warn("Failed to save profile:", e));
 
-          if (isAdmin) {
-            await setDoc(doc(db, 'admins', firebaseUser.uid), {
+          if (isAdminUser) {
+            setDoc(doc(db, 'admins', firebaseUser.uid), {
               email: firebaseUser.email,
               assignedAt: serverTimestamp()
-            });
+            }).catch(e => console.warn("Failed to save admin list:", e));
           }
 
           setProfile({ uid: firebaseUser.uid, ...newProfile } as UserProfile);
         }
         
-        // Ensure existing admin is also in the admins collection if they somehow escaped it
-        if (currentRole === UserRole.ADMIN) {
-          await setDoc(doc(db, 'admins', firebaseUser.uid), {
-            email: firebaseUser.email,
-            lastLogin: serverTimestamp()
-          }, { merge: true });
-        }
-
+        // Final state setup
         setEffectiveRole(UserRole.USER);
       } catch (err) {
         console.error("Profile Fetch Error:", err);
         setEffectiveRole(UserRole.USER);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
