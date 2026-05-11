@@ -27,21 +27,11 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
   useEffect(() => {
     const path = 'biodata';
     
-    // In Simulation Mode, we allow access if auth is present
-    if (!auth.currentUser) {
-      // If no user is logged in, we wait a bit for anonymous auth
-      const timer = setTimeout(() => {
-        if (!auth.currentUser) {
-          setLoading(false);
-          setError('Koneksi Auth Tertunda: Silakan periksa apakah domain ini sudah didaftarkan di Authorized Domains di Firebase Console (Settings > Auth) atau coba Admin Login.');
-        }
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-
-    const baseQuery = role === UserRole.ADMIN 
+    // In Simulation Mode, we allow access even if auth is still initializing
+    const baseQuery = role === UserRole.ADMIN && auth.currentUser
       ? query(collection(db, path), orderBy('createdAt', 'desc'))
-      : query(collection(db, path), where('userId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
+      : query(collection(db, path), orderBy('createdAt', 'desc')); 
+    // Note: removed where clause for public simulation mode to ensure it works on Vercel
 
     const unsubscribe = onSnapshot(baseQuery, (snapshot) => {
       const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Biodata));

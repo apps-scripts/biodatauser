@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { UserProfile } from '../types';
 import { Settings as SettingsIcon, Save, RefreshCcw, Shield, User } from 'lucide-react';
@@ -51,15 +51,30 @@ export default function SettingsPage({ profile }: SettingsPageProps) {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!simPassword || simPassword.length < 4) {
+      setMessage({ type: 'error', text: 'Password harus minimal 4 karakter!' });
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
     try {
       const configRef = doc(db, 'system', 'config');
-      await setDoc(configRef, { simulationPassword: simPassword }, { merge: true });
-      setMessage({ type: 'success', text: 'Password simulasi berhasil diubah!' });
+      await setDoc(configRef, { 
+        simulationPassword: simPassword,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser?.email || 'simulation-user'
+      }, { merge: true });
+      setMessage({ type: 'success', text: 'Password simulasi berhasil diubah secara permanen di database!' });
     } catch (err: any) {
       console.error('Change Password Error:', err);
-      setMessage({ type: 'error', text: `Gagal mengubah password: ${err.message}` });
+      let errorText = 'Gagal mengubah password.';
+      if (err.message?.includes('permission-denied')) {
+        errorText = 'Akses Ditolak: Database memblokir perubahan ini. Pastikan domain sudah didaftarkan di Authorized Domains di Firebase Console.';
+      } else {
+        errorText = `Gagal: ${err.message}`;
+      }
+      setMessage({ type: 'error', text: errorText });
     } finally {
       setLoading(false);
     }
@@ -71,11 +86,15 @@ export default function SettingsPage({ profile }: SettingsPageProps) {
     setMessage(null);
     try {
       const configRef = doc(db, 'system', 'config');
-      await setDoc(configRef, { simulationPassword: 'admin123' }, { merge: true });
+      await setDoc(configRef, { 
+        simulationPassword: 'admin123',
+        updatedAt: serverTimestamp()
+      }, { merge: true });
       setSimPassword('admin123');
-      setMessage({ type: 'success', text: 'Password telah direset ke default.' });
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Gagal meriset password.' });
+      setMessage({ type: 'success', text: 'Password telah direset ke default (admin123).' });
+    } catch (err: any) {
+      console.error('Reset Password Error:', err);
+      setMessage({ type: 'error', text: 'Gagal meriset password. Silakan periksa koneksi atau Authorized Domains.' });
     } finally {
       setLoading(false);
     }

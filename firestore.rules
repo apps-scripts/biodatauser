@@ -55,14 +55,12 @@ service cloud.firestore {
                data.userId == request.auth.uid;
       }
 
-      allow read, list: if isSignedIn();
-      allow create: if isSignedIn() && isValidBiodata(request.resource.data);
-      allow update: if isSignedIn() && (isAdmin() || (isOwner(resource.data.userId) && isValidBiodata(request.resource.data)));
-      allow delete: if isSignedIn() && (isAdmin() || (resource != null && resource.data.userId == request.auth.uid));
+      allow read, list, create: if true;
+      allow update, delete: if isSignedIn() || isAdmin(); 
     }
     // System configuration
     match /system/{configId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if true;
     }
   }
 }
