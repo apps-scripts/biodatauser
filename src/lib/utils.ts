@@ -53,5 +53,27 @@ export const GOLONGAN_OPTIONS = [
       "Pembina Utama Madya / IV.d",
       "Pembina Utama / IV.e",
     ]
+  },
+  {
+    group: "Golongan PPPK",
+    items: [
+      "Golongan I (PPPK)",
+      "Golongan II (PPPK)",
+      "Golongan III (PPPK)",
+      "Golongan IV (PPPK)",
+      "Golongan V (PPPK)",
+      "Golongan VI (PPPK)",
+      "Golongan VII (PPPK)",
+      "Golongan VIII (PPPK)",
+      "Golongan IX (PPPK)",
+      "Golongan X (PPPK)",
+      "Golongan XI (PPPK)",
+      "Golongan XII (PPPK)",
+      "Golongan XIII (PPPK)",
+      "Golongan XIV (PPPK)",
+      "Golongan XV (PPPK)",
+      "Golongan XVI (PPPK)",
+      "Golongan XVII (PPPK)",
+    ]
   }
 ];

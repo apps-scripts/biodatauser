@@ -3,7 +3,7 @@ import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/fi
 import { db, auth } from '../lib/firebase';
 import { Biodata, OperationType } from '../types';
 import { handleFirestoreError, GOLONGAN_OPTIONS } from '../lib/utils';
-import { Save, User, CreditCard, Landmark, Phone, Book, Building, MapPin, Upload, X } from 'lucide-react';
+import { Save, User, CreditCard, Landmark, Phone, Book, Building, MapPin, Upload, X, Camera, Image as ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import ModernSelect from './ModernSelect';
 
@@ -420,67 +420,111 @@ export default function BiodataForm({ editingBiodata, onCancelEdit, onSuccess }:
             <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-2">
               Dokumen Pendukung (Foto) <span className="text-red-500">*</span>
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Foto KTP */}
-              <div className="relative group">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  onChange={(e) => handleFileChange(e, 'fotoKtpUrl')}
-                />
-                <div className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 transition-all ${
-                  formData.fotoKtpUrl ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                  <CreditCard size={16} className="text-blue-500" />
+                  FOTO KTP <span className="text-red-500">*</span>
+                </p>
+                <div className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center gap-4 transition-all min-h-[220px] ${
+                  formData.fotoKtpUrl ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-gray-50'
                 }`}>
                   {formData.fotoKtpUrl ? (
-                    <div className="relative w-full aspect-[3/2] rounded-lg overflow-hidden">
+                    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-sm group">
                       <img src={formData.fotoKtpUrl} alt="Preview KTP" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                        <p className="text-white text-[10px] font-bold uppercase tracking-widest">Klik untuk ganti foto</p>
-                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, fotoKtpUrl: '' }))}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
                   ) : (
-                    <>
-                      <div className="p-3 bg-blue-100 rounded-full text-blue-600">
-                        <CreditCard size={24} />
+                    <div className="flex flex-col items-center gap-4 w-full">
+                      <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+                        <CreditCard size={32} />
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm font-bold text-gray-800">FOTO KTP <span className="text-red-500">*</span></p>
-                        <p className="text-[10px] text-gray-400 mt-1">Klik atau seret untuk ambil foto</p>
+                      <div className="flex flex-col gap-2 w-full px-2">
+                        <label className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest cursor-pointer hover:bg-blue-700 transition-all shadow-md active:scale-[0.98]">
+                          <Camera size={16} />
+                          Ambil Foto
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            capture="environment"
+                            className="hidden" 
+                            onChange={(e) => handleFileChange(e, 'fotoKtpUrl')}
+                          />
+                        </label>
+                        <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-blue-600 border border-blue-200 rounded-xl text-xs font-bold uppercase tracking-widest cursor-pointer hover:bg-blue-50 transition-all active:scale-[0.98]">
+                          <ImageIcon size={16} />
+                          Pilih Galeri
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => handleFileChange(e, 'fotoKtpUrl')}
+                          />
+                        </label>
                       </div>
-                    </>
+                      <p className="text-[10px] text-gray-400">Format: JPG, PNG (Max 5MB)</p>
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* Foto NPWP */}
-              <div className="relative group">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  onChange={(e) => handleFileChange(e, 'fotoNpwpUrl')}
-                />
-                <div className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 transition-all ${
-                  formData.fotoNpwpUrl ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                  <Book size={16} className="text-orange-500" />
+                  FOTO NPWP <span className="text-red-500">*</span>
+                </p>
+                <div className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center gap-4 transition-all min-h-[220px] ${
+                  formData.fotoNpwpUrl ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-gray-50'
                 }`}>
                   {formData.fotoNpwpUrl ? (
-                    <div className="relative w-full aspect-[3/2] rounded-lg overflow-hidden">
+                    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-sm group">
                       <img src={formData.fotoNpwpUrl} alt="Preview NPWP" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                        <p className="text-white text-[10px] font-bold uppercase tracking-widest">Klik untuk ganti foto</p>
-                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, fotoNpwpUrl: '' }))}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
                   ) : (
-                    <>
-                      <div className="p-3 bg-orange-100 rounded-full text-orange-600">
-                        <Book size={24} />
+                    <div className="flex flex-col items-center gap-4 w-full">
+                      <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600">
+                        <Book size={32} />
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm font-bold text-gray-800">FOTO NPWP <span className="text-red-500">*</span></p>
-                        <p className="text-[10px] text-gray-400 mt-1">Klik atau seret untuk ambil foto</p>
+                      <div className="flex flex-col gap-2 w-full px-2">
+                        <label className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest cursor-pointer hover:bg-orange-700 transition-all shadow-md active:scale-[0.98]">
+                          <Camera size={16} />
+                          Ambil Foto
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            capture="environment"
+                            className="hidden" 
+                            onChange={(e) => handleFileChange(e, 'fotoNpwpUrl')}
+                          />
+                        </label>
+                        <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-orange-600 border border-orange-200 rounded-xl text-xs font-bold uppercase tracking-widest cursor-pointer hover:bg-orange-50 transition-all active:scale-[0.98]">
+                          <ImageIcon size={16} />
+                          Pilih Galeri
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => handleFileChange(e, 'fotoNpwpUrl')}
+                          />
+                        </label>
                       </div>
-                    </>
+                      <p className="text-[10px] text-gray-400">Format: JPG, PNG (Max 5MB)</p>
+                    </div>
                   )}
                 </div>
               </div>
