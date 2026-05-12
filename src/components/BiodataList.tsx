@@ -109,17 +109,17 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
     
     // Content Data
     const dataRows = [
-      ['NAMA LENGKAP', `:  ${item.namaLengkap}`],
-      ['NIP', `:  ${item.nip || '-'}`],
-      ['PANGKAT / GOLONGAN', `:  ${item.pangkatGolongan || '-'}`],
-      ['JABATAN', `:  ${item.jabatan}`],
-      ['NIK', `:  ${item.nik}`],
-      ['NPWP', `:  ${item.npwp.replace(/[\.\-]/g, '')}`],
-      ['INSTANSI', `:  ${item.instansi}`],
-      ['ALAMAT', `:  ${item.alamatKantor}`],
-      ['PENDIDIKAN', `:  ${item.pendidikan}`],
-      ['NO. TELP / WA', `:  ${item.telpWa}`],
-      ['BANK - REKENING', `:  ${item.namaBank} - ${item.nomorRekening}`],
+      ['NAMA LENGKAP', ':', item.namaLengkap],
+      ['NIP', ':', item.nip || '-'],
+      ['PANGKAT / GOLONGAN', ':', item.pangkatGolongan || '-'],
+      ['JABATAN', ':', item.jabatan],
+      ['NIK', ':', item.nik],
+      ['NPWP', ':', item.npwp.replace(/[\.\-]/g, '')],
+      ['INSTANSI', ':', item.instansi],
+      ['ALAMAT', ':', item.alamatKantor],
+      ['PENDIDIKAN', ':', item.pendidikan],
+      ['NO. TELP / WA', ':', item.telpWa],
+      ['BANK - REKENING', ':', `${item.namaBank} - ${item.nomorRekening}`],
     ];
 
     autoTable(doc, {
@@ -134,8 +134,9 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
         font: 'helvetica'
       },
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 70 },
-        1: { cellWidth: 100 }
+        0: { fontStyle: 'bold', cellWidth: 55 },
+        1: { cellWidth: 5, halign: 'center' },
+        2: { cellWidth: 110 }
       },
       didDrawCell: (data) => {
         // Draw bottom line for each row across the full width of the table
@@ -144,8 +145,8 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
           doc.setDrawColor(0, 0, 0); // Solid black line
           doc.setLineWidth(0.1);
           // Only draw if it's the last cell in the row
-          if (data.column.index === 1) {
-            const tableWidth = 170; // 70 + 100
+          if (data.column.index === 2) {
+            const tableWidth = 170; // 55 + 5 + 110
             const startX = 20;
             doc.line(startX, data.cell.y + data.cell.height, startX + tableWidth, data.cell.y + data.cell.height);
           }
