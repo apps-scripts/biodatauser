@@ -88,7 +88,7 @@ export default function Navbar({ role, effectiveRole, setEffectiveRole, displayN
               }`}
             >
               <ArrowLeftRight size={15} />
-              {effectiveRole === UserRole.ADMIN ? 'Mode Admin' : 'Mode User (Simulasi)'}
+              {effectiveRole === UserRole.ADMIN ? 'Mode Admin' : 'Mode User'}
             </button>
 
             {showPasswordInput && (

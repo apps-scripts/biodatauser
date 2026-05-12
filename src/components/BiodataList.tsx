@@ -6,6 +6,7 @@ import { Biodata, UserRole, OperationType } from '../types';
 import { handleFirestoreError } from '../lib/utils';
 import { Search, ChevronLeft, ChevronRight, Edit2, Trash2, Printer, Eye, FileText, Download, X, Image as ImageIcon, FileSpreadsheet, FileDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import toast, { Toaster } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -65,22 +66,23 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
 
   const handleDelete = (id: string) => {
     if (!id) {
-      alert('Gagal: ID data tidak ditemukan.');
+      toast.error('Gagal: ID data tidak ditemukan.');
       return;
     }
     setDeleteConfirmId(id);
   };
 
   const executeDelete = async (id: string) => {
+    const toastId = toast.loading('Sedang menghapus data...');
     setLoading(true);
     setDeleteConfirmId(null);
     try {
       const docRef = doc(db, 'biodata', id);
       await deleteDoc(docRef);
-      alert('Data berhasil dihapus.');
+      toast.success('Data berhasil dihapus selamanya.', { id: toastId });
     } catch (error: any) {
       handleFirestoreError(error, OperationType.DELETE, 'biodata');
-      alert('Gagal menghapus data.');
+      toast.error('Gagal menghapus data: ' + error.message, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -169,8 +171,13 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
     doc.line(150 - (textWidth/2), finalY + 36, 150 + (textWidth/2), finalY + 36);
 
     // Open in new tab
-    const pdfUrl = doc.output('bloburl');
-    window.open(pdfUrl, '_blank');
+    try {
+      const pdfUrl = doc.output('bloburl');
+      window.open(pdfUrl, '_blank');
+      toast.success('PDF berhasil digenerate.');
+    } catch (err) {
+      toast.error('Gagal membuka PDF.');
+    }
     setPrintOptionsItem(null); // Close modal
   };
 
@@ -299,6 +306,7 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -679,7 +687,7 @@ export default function BiodataList({ role, onEdit }: BiodataListProps) {
                       onClick={() => generateFinalPDF(printOptionsItem)}
                       className="w-full py-4.5 bg-blue-600 text-white rounded-2xl text-base font-black hover:bg-blue-700 transition-all shadow-[0_20px_40px_-12px_rgba(37,99,235,0.3)] active:scale-[0.98] uppercase tracking-wide"
                     >
-                      GENERATE & CETAK PDF
+                      CETAK PDF
                     </button>
                     <button
                       onClick={() => setPrintOptionsItem(null)}
