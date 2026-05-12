@@ -34,3 +34,19 @@
     @apply font-sans text-gray-900 bg-gray-50;
   }
 }
+
+@media print {
+  body {
+    display: none;
+  }
+}
+
+.no-print {
+  display: block;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
